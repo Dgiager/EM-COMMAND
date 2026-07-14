@@ -32,8 +32,39 @@
 </main>
 <script>
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const resources=[['Oklahoma Mesonet','Observations, radar and environmental maps','https://www.mesonet.org/'],['OK-First','Public-safety weather decision support','https://www.mesonet.org/public-safety'],['RadarFirst','OK-First radar launch page','https://www.mesonet.org/index.php/okfirst/data_visualization_tools'],['FEMA','Emergency manager resources','https://www.fema.gov/emergency-managers'],['Homeland Security','DHS programs and responder resources','https://www.dhs.gov/'],['ArcGIS QuickCapture','Rapid field data collection','https://www.esri.com/en-us/arcgis/products/arcgis-quickcapture/resources'],['NWS Norman','Local forecasts, warnings and briefings','https://www.weather.gov/oun/'],['Storm Prediction Center','Outlooks, watches and discussions','https://www.spc.noaa.gov/']];
-$('links').innerHTML=resources.map(r=>`<a class="link" href="${r[2]}" target="_blank" rel="noopener"><strong>${r[0]}</strong><span>${r[1]}</span></a>`).join('');
+const resources=[
+['Oklahoma Mesonet','Observations, radar and environmental maps','https://www.mesonet.org/'],
+['OK-First','Public-safety weather decision support','https://www.mesonet.org/public-safety'],
+['RadarFirst','OK-First radar launch page','https://www.mesonet.org/index.php/okfirst/data_visualization_tools'],
+['Next Generation Fire System','NOAA satellite fire detections, imagery and incident context','https://fire.data.nesdis.noaa.gov/map/'],
+['Oklahoma Emergency Managers Association','State professional association link saved on this device','', 'oemaUrl'],
+['Oklahoma WebEOC','Authorized incident coordination portal saved on this device','', 'webeocUrl'],
+['FEMA','Emergency manager resources','https://www.fema.gov/emergency-managers'],
+['Homeland Security','DHS programs and responder resources','https://www.dhs.gov/'],
+['ArcGIS QuickCapture','Rapid field data collection','https://www.esri.com/en-us/arcgis/products/arcgis-quickcapture/resources'],
+['NWS Norman','Local forecasts, warnings and briefings','https://www.weather.gov/oun/'],
+['Storm Prediction Center','Outlooks, watches and discussions','https://www.spc.noaa.gov/']
+];
+function configuredResourceUrl(key,title){
+ let url=localStorage.getItem(`emResource:${key}`)||'';
+ if(!url){
+  url=prompt(`Paste the authorized ${title} web address.\n\nOnly the URL is stored on this device. Do not enter a username or password.`,'')||'';
+  url=url.trim();
+  if(!url)return '';
+  if(!/^https:\/\//i.test(url)){alert('For security, enter a complete HTTPS address beginning with https://');return ''}
+  try{new URL(url)}catch{alert('That does not appear to be a valid web address.');return ''}
+  localStorage.setItem(`emResource:${key}`,url);
+ }
+ return url;
+}
+$('links').innerHTML=resources.map(r=>r[3]
+ ? `<a class="link configurable-link" href="#" data-resource-key="${r[3]}" data-resource-title="${r[0]}"><strong>${r[0]}</strong><span>${r[1]}</span></a>`
+ : `<a class="link" href="${r[2]}" target="_blank" rel="noopener"><strong>${r[0]}</strong><span>${r[1]}</span></a>`).join('');
+document.querySelectorAll('.configurable-link').forEach(a=>a.addEventListener('click',e=>{
+ e.preventDefault();
+ const url=configuredResourceUrl(a.dataset.resourceKey,a.dataset.resourceTitle);
+ if(url)window.open(url,'_blank','noopener');
+}));
 function connectivity(){$('dot').classList.toggle('online',navigator.onLine);$('net').textContent=navigator.onLine?'Online':'Offline'}
 function clock(){ $('clock').textContent=new Date().toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}) }
 setInterval(clock,1000);clock();connectivity();addEventListener('online',connectivity);addEventListener('offline',connectivity);
@@ -41,7 +72,7 @@ const saved=JSON.parse(localStorage.getItem('emConfig')||'null');if(saved){$('pl
 async function json(url){const r=await fetch(url,{headers:{Accept:'application/geo+json, application/json'},cache:'no-store'});if(!r.ok)throw Error(`${r.status} ${r.statusText}`);return r.json()}
 function fmt(t){return t?new Date(t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Unknown'}
 async function refresh(){const place=$('place').value.trim(),lat=Number($('lat').value),lon=Number($('lon').value);if(!Number.isFinite(lat)||!Number.isFinite(lon))return alert('Enter valid coordinates.');localStorage.setItem('emConfig',JSON.stringify({place,lat,lon}));$('alerts').innerHTML='<div class="empty">Loading alerts…</div>';$('forecast').innerHTML='<div class="empty">Loading forecast…</div>';$('sat').src=`https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/GEOCOLOR/1250x750.jpg?t=${Date.now()}`;
-try{const [alerts,point]=await Promise.all([json(`https://api.weather.gov/alerts/active?point=${lat},${lon}`),json(`https://api.weather.gov/points/${lat},${lon}`)]);const list=alerts.features||[];$('alertTitle').textContent=`Active NWS Alerts · ${list.length}`;$('alerts').innerHTML=list.length?list.map(f=>{const p=f.properties||{},sev=(p.severity||'unknown').toLowerCase();return `<div class="alert ${sev}"><h3>${esc(p.event||'Weather Alert')}</h3><div>${esc(p.headline||p.areaDesc||'')}</div><div class="meta">Expires ${esc(fmt(p.expires))} · ${esc(p.severity||'Unknown')}</div></div>`}).join(''):'<div class="empty">No active NWS alerts for this point.</div>';const fc=await json(point.properties.forecast);const periods=(fc.properties.periods||[]).slice(0,6);$('forecastTitle').textContent=`Operational Outlook · ${place}`;$('forecast').innerHTML=periods.map(p=>`<div class="period"><b>${esc(p.name)}</b><div class="temp">${esc(p.temperature)}°${esc(p.temperatureUnit)}</div><div>${esc(p.shortForecast)}</div><div class="meta">${esc(p.windDirection)} ${esc(p.windSpeed)}</div></div>`).join('')||'<div class="empty">Forecast unavailable.</div>'}catch(e){console.error(e);$('alerts').innerHTML=`<div class="empty warning">NWS data could not load: ${esc(e.message)}. Use the NWS and Mesonet links below.</div>`;$('forecast').innerHTML='<div class="empty warning">Forecast unavailable.</div>'}}
+try{const [alerts,point]=await Promise.all([json(`https://api.weather.gov/alerts/active?point=${lat},${lon}`),json(`https://api.weather.gov/points/${lat},${lon}`)]);const list=alerts.features||[];$('alertTitle').textContent=`Active NWS Alerts · ${list.length}`;$('alerts').innerHTML=list.length?list.map(f=>{const p=f.properties||{},sev=(p.severity||'unknown').toLowerCase();return `<div class="alert ${sev}"><h3>${esc(p.event||'Weather Alert')}</h3><div>${esc(p.headline||p.areaDesc||'')}</div><div class="meta">Expires ${esc(fmt(p.expires))} · ${esc(p.severity||'Unknown')}</div></div>`}).join(''):'<div class="empty">No active NWS alerts for this point.</div>';const fc=await json(point.properties.forecast);const periods=(fc.properties.periods||[]).slice(0,6);$('forecastTitle').textContent=`Operational Outlook · ${esc(place)}`;$('forecast').innerHTML=periods.map(p=>`<div class="period"><b>${esc(p.name)}</b><div class="temp">${esc(p.temperature)}°${esc(p.temperatureUnit)}</div><div>${esc(p.shortForecast)}</div><div class="meta">${esc(p.windDirection)} ${esc(p.windSpeed)}</div></div>`).join('')||'<div class="empty">Forecast unavailable.</div>'}catch(e){console.error(e);$('alerts').innerHTML=`<div class="empty warning">NWS data could not load: ${esc(e.message)}. Use the NWS and Mesonet links below.</div>`;$('forecast').innerHTML='<div class="empty warning">Forecast unavailable.</div>'}}
 $('refresh').onclick=refresh;
 let logs=JSON.parse(localStorage.getItem('emLogs')||'[]');function renderLogs(){$('entries').innerHTML=logs.length?[...logs].reverse().map(x=>`<div class="entry"><b>${esc(x.category)}</b><span class="meta"> · ${esc(new Date(x.time).toLocaleString())}</span><p>${esc(x.notes)}</p>${x.location?`<div class="meta">Location: ${esc(x.location)}</div>`:''}</div>`).join(''):'<div class="empty">No entries recorded.</div>'}
 $('logForm').onsubmit=e=>{e.preventDefault();logs.push({time:new Date().toISOString(),category:$('category').value.trim(),location:$('location').value.trim(),notes:$('notes').value.trim()});localStorage.setItem('emLogs',JSON.stringify(logs));e.target.reset();renderLogs()};
