@@ -1,322 +1,53 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1118">
-  <meta name="description" content="Emergency management situational-awareness dashboard with NWS alerts, GOES satellite imagery, Oklahoma Mesonet, OK-First, RadarFirst, FEMA, DHS, and ArcGIS QuickCapture links.">
-  <title>EM Command</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07131d">
+<title>EM Command</title>
+<style>
+:root{color-scheme:dark;--bg:#061019;--panel:#0d1b26;--line:#253b49;--text:#edf7fb;--muted:#91a8b7;--cyan:#45d9ff;--green:#55df98;--amber:#ffca54;--red:#ff556b}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Segoe UI,sans-serif;background:radial-gradient(circle at 10% 0,#123247 0,transparent 35rem),var(--bg);color:var(--text)}header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;background:#07131df2;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}h1,h2,h3,p{margin-top:0}.brand{font-weight:900;letter-spacing:.12em}.brand small{display:block;color:var(--cyan);font-size:.62rem;letter-spacing:.16em}.status{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:.78rem}.dot{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px currentColor}.dot.online{background:var(--green)}main{width:min(1450px,100%);margin:auto;padding:18px}.bar,.panel{border:1px solid var(--line);background:linear-gradient(145deg,#ffffff08,transparent 40%),var(--panel);border-radius:14px}.bar{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;padding:12px;margin-bottom:14px}.bar label{font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}.bar input{width:100%;margin-top:5px}.btn,input,select,textarea{border:1px solid var(--line);border-radius:9px;background:#07131d;color:var(--text);padding:10px}.btn{cursor:pointer;font-weight:800;text-decoration:none;text-align:center}.btn.primary{background:var(--cyan);color:#031017;border-color:transparent}.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(320px,.8fr);gap:14px}.panel{overflow:hidden}.head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line)}.head h2{font-size:1rem;margin:0}.eyebrow{color:var(--cyan);font-size:.62rem;font-weight:900;letter-spacing:.14em}.sat{position:relative;background:#02070a;min-height:360px}.sat img{display:block;width:100%;min-height:360px;object-fit:cover}.source{padding:8px 12px;color:var(--muted);font-size:.68rem}.alerts{max-height:510px;overflow:auto;padding:10px}.alert{margin-bottom:9px;padding:11px;border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:9px;background:#ffffff05}.alert.severe,.alert.extreme{border-left-color:var(--red)}.alert h3{font-size:.88rem;margin-bottom:5px}.meta,.muted{color:var(--muted);font-size:.7rem}.empty{padding:35px 15px;color:var(--muted);text-align:center}.forecast{display:grid;grid-template-columns:repeat(6,minmax(135px,1fr));gap:9px;overflow:auto;padding:11px}.period{padding:11px;border:1px solid var(--line);border-radius:10px;background:#ffffff05}.period b{color:var(--cyan);font-size:.7rem}.temp{font-size:1.7rem;font-weight:900;margin:9px 0 4px}.links{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;padding:11px}.link{display:block;padding:13px;border:1px solid var(--line);border-radius:10px;text-decoration:none;background:#ffffff05}.link strong{display:block;margin-bottom:5px}.link span{color:var(--muted);font-size:.7rem}.logwrap{display:grid;grid-template-columns:380px 1fr;gap:14px;margin-top:14px}.form{display:grid;gap:9px;padding:13px}.form textarea{min-height:110px;resize:vertical}.entries{padding:10px;max-height:410px;overflow:auto}.entry{padding:11px;border-bottom:1px solid var(--line)}.entry:last-child{border-bottom:0}.entry b{color:var(--cyan)}.entry p{margin:6px 0;white-space:pre-wrap}.actions{display:flex;gap:8px}.warning{color:#ffd49a}.footer{padding:16px;text-align:center;color:var(--muted);font-size:.68rem}@media(max-width:900px){.bar,.grid,.logwrap{grid-template-columns:1fr}.links{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){header{align-items:flex-start;flex-direction:column}.links{grid-template-columns:1fr}.sat,.sat img{min-height:240px}.bar{padding:10px}}
+</style>
 </head>
 <body>
-  <div class="scanline" aria-hidden="true"></div>
-
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <span class="brand-ring"></span>
-        <span class="brand-pulse"></span>
-      </div>
-      <div>
-        <div class="eyebrow">SITUATIONAL AWARENESS</div>
-        <h1 id="agencyTitle">EM COMMAND</h1>
-      </div>
-    </div>
-
-    <div class="top-status">
-      <div class="status-chip">
-        <span id="onlineDot" class="status-dot"></span>
-        <span id="onlineText">Checking network</span>
-      </div>
-      <div class="clock">
-        <strong id="clockTime">--:--:--</strong>
-        <span id="clockDate">Loading date</span>
-      </div>
-      <button id="installButton" class="button ghost hidden" type="button">Install App</button>
-      <button id="refreshButton" class="button primary" type="button">Refresh Data</button>
-    </div>
-  </header>
-
-  <div id="alertRibbon" class="alert-ribbon hidden" role="status" aria-live="polite">
-    <span class="alert-ribbon-icon">!</span>
-    <div>
-      <strong id="alertRibbonTitle">Active alert</strong>
-      <span id="alertRibbonText"></span>
-    </div>
-    <button id="viewAlertsButton" class="button alert-button" type="button">View alerts</button>
-  </div>
-
-  <nav class="tabs" aria-label="Main navigation">
-    <button class="tab active" data-target="dashboardView" type="button">Dashboard</button>
-    <button class="tab" data-target="resourcesView" type="button">Resources</button>
-    <button class="tab" data-target="incidentView" type="button">Incident Log</button>
-    <button class="tab" data-target="settingsView" type="button">Settings</button>
-  </nav>
-
-  <main>
-    <section id="dashboardView" class="view active">
-      <div class="overview-grid">
-        <article class="metric-card">
-          <div class="metric-label">Operating Area</div>
-          <div class="metric-main" id="locationDisplay">Fairview / Major County, OK</div>
-          <div class="metric-sub" id="coordinatesDisplay">36.2689, -98.4798</div>
-        </article>
-
-        <article class="metric-card weather-metric">
-          <div class="metric-label">Current Conditions</div>
-          <div class="weather-line">
-            <span id="currentTemp" class="metric-number">--°</span>
-            <div>
-              <div id="currentCondition" class="metric-main">Loading</div>
-              <div id="currentWind" class="metric-sub">Wind --</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="metric-card">
-          <div class="metric-label">NWS Alerts</div>
-          <div class="alert-count-row">
-            <span id="activeAlertCount" class="metric-number">0</span>
-            <span id="alertSeverityBadge" class="badge neutral">None active</span>
-          </div>
-          <div id="lastAlertUpdate" class="metric-sub">Not updated</div>
-        </article>
-
-        <article class="metric-card">
-          <div class="metric-label">EOC Status</div>
-          <select id="eocStatus" class="status-select" aria-label="EOC status">
-            <option value="Monitoring">Monitoring</option>
-            <option value="Partial Activation">Partial Activation</option>
-            <option value="Full Activation">Full Activation</option>
-            <option value="Recovery">Recovery</option>
-          </select>
-          <div class="metric-sub">Saved on this device</div>
-        </article>
-      </div>
-
-      <div class="dashboard-grid">
-        <article class="panel satellite-panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">NOAA / NESDIS</div>
-              <h2>GOES-19 GeoColor</h2>
-            </div>
-            <div class="panel-actions">
-              <button id="refreshSatelliteButton" class="button ghost small" type="button">Refresh image</button>
-              <a class="button secondary small" href="https://www.star.nesdis.noaa.gov/GOES/conus.php?sat=G19" target="_blank" rel="noopener">Open viewer</a>
-            </div>
-          </div>
-          <div class="satellite-frame">
-            <img id="goesImage"
-                 src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/GEOCOLOR/1250x750.jpg"
-                 alt="Latest NOAA GOES-19 CONUS GeoColor satellite image">
-            <div class="satellite-overlay">
-              <span class="live-pill"><span></span> LIVE SOURCE</span>
-              <span id="satelliteUpdated">Auto-refreshes every 5 minutes</span>
-            </div>
-            <div id="satelliteError" class="image-error hidden">
-              Satellite image could not load. Use “Open viewer.”
-            </div>
-          </div>
-          <p class="source-note">Visual reference only. Confirm decisions through official warning and operational channels.</p>
-        </article>
-
-        <article class="panel alerts-panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">WEATHER.GOV</div>
-              <h2>Active NWS Alerts</h2>
-            </div>
-            <button id="alertsOnlyRefresh" class="icon-button" type="button" aria-label="Refresh alerts">↻</button>
-          </div>
-          <div id="alertsList" class="alerts-list">
-            <div class="empty-state">Loading active alerts…</div>
-          </div>
-        </article>
-      </div>
-
-      <article class="panel">
-        <div class="panel-header">
-          <div>
-            <div class="eyebrow">NWS DIGITAL FORECAST</div>
-            <h2>Operational Outlook</h2>
-          </div>
-          <span id="forecastOffice" class="muted">Loading office</span>
-        </div>
-        <div id="forecastStrip" class="forecast-strip">
-          <div class="forecast-placeholder"></div>
-          <div class="forecast-placeholder"></div>
-          <div class="forecast-placeholder"></div>
-          <div class="forecast-placeholder"></div>
-          <div class="forecast-placeholder"></div>
-        </div>
-      </article>
-
-      <article class="panel quick-launch-panel">
-        <div class="panel-header">
-          <div>
-            <div class="eyebrow">ONE-TAP ACCESS</div>
-            <h2>Quick Launch</h2>
-          </div>
-          <button class="link-button" data-go-view="resourcesView" type="button">All resources</button>
-        </div>
-        <div id="quickLaunchGrid" class="quick-launch-grid"></div>
-      </article>
-    </section>
-
-    <section id="resourcesView" class="view">
-      <div class="section-heading">
-        <div>
-          <div class="eyebrow">OPERATIONAL TOOLBOX</div>
-          <h2>Emergency Management Resources</h2>
-          <p>Secure or password-protected services open in a separate tab. Credentials are never stored by this dashboard.</p>
-        </div>
-        <input id="resourceSearch" class="search-input" type="search" placeholder="Filter resources" aria-label="Filter resources">
-      </div>
-      <div id="resourceGrid" class="resource-grid"></div>
-    </section>
-
-    <section id="incidentView" class="view">
-      <div class="incident-layout">
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">LOCAL DEVICE LOG</div>
-              <h2>Add Incident Entry</h2>
-            </div>
-          </div>
-
-          <form id="incidentForm" class="incident-form">
-            <label>
-              Date and time
-              <input id="incidentTime" type="datetime-local" required>
-            </label>
-            <label>
-              Category
-              <select id="incidentCategory">
-                <option>Weather</option>
-                <option>Damage</option>
-                <option>Road Closure</option>
-                <option>Power / Utilities</option>
-                <option>Fire</option>
-                <option>Flooding</option>
-                <option>Public Information</option>
-                <option>Resource Request</option>
-                <option>Other</option>
-              </select>
-            </label>
-            <label>
-              Priority
-              <select id="incidentPriority">
-                <option>Routine</option>
-                <option>Elevated</option>
-                <option>Urgent</option>
-                <option>Critical</option>
-              </select>
-            </label>
-            <label class="full-width">
-              Location
-              <input id="incidentLocation" type="text" placeholder="Street, landmark, sector, or coordinates">
-            </label>
-            <label class="full-width">
-              Entry
-              <textarea id="incidentNotes" rows="5" placeholder="What happened, action taken, resource assigned, and next step…" required></textarea>
-            </label>
-            <button class="button primary full-width" type="submit">Add to Log</button>
-          </form>
-        </article>
-
-        <article class="panel incident-log-panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">CHRONOLOGICAL RECORD</div>
-              <h2>Incident Log</h2>
-            </div>
-            <div class="panel-actions">
-              <button id="exportLogButton" class="button secondary small" type="button">Export CSV</button>
-              <button id="clearLogButton" class="button danger small" type="button">Clear</button>
-            </div>
-          </div>
-          <div id="incidentLog" class="incident-log">
-            <div class="empty-state">No entries recorded on this device.</div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section id="settingsView" class="view">
-      <div class="settings-grid">
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">LOCAL CONFIGURATION</div>
-              <h2>Agency and Location</h2>
-            </div>
-          </div>
-          <form id="settingsForm" class="settings-form">
-            <label>
-              Dashboard title
-              <input id="agencyNameInput" type="text" maxlength="40">
-            </label>
-            <label>
-              Location label
-              <input id="locationNameInput" type="text" maxlength="80">
-            </label>
-            <div class="coordinate-row">
-              <label>
-                Latitude
-                <input id="latitudeInput" type="number" step="0.0001" min="-90" max="90">
-              </label>
-              <label>
-                Longitude
-                <input id="longitudeInput" type="number" step="0.0001" min="-180" max="180">
-              </label>
-            </div>
-            <button id="useLocationButton" class="button secondary" type="button">Use Device Location</button>
-            <label>
-              ArcGIS QuickCapture project or launch URL
-              <input id="quickCaptureUrlInput" type="url">
-            </label>
-            <label>
-              RadarFirst / OK-First launch URL
-              <input id="radarFirstUrlInput" type="url">
-            </label>
-            <button class="button primary" type="submit">Save Settings</button>
-            <button id="resetSettingsButton" class="button ghost" type="button">Restore Defaults</button>
-          </form>
-        </article>
-
-        <article class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">DATA HANDLING</div>
-              <h2>Privacy and Operations</h2>
-            </div>
-          </div>
-          <div class="info-block">
-            <h3>Stored locally</h3>
-            <p>Agency settings, EOC status, and incident-log entries remain in this browser’s local storage.</p>
-          </div>
-          <div class="info-block">
-            <h3>Not stored</h3>
-            <p>This app does not collect or save FEMA, DHS, OK-First, RadarFirst, Mesonet, NWS, or ArcGIS account credentials.</p>
-          </div>
-          <div class="info-block warning">
-            <h3>Operational caution</h3>
-            <p>This dashboard combines public data and launch links. It is not a replacement for NWSChat, IPAWS, EMWIN, NOAA Weather Wire, local dispatch, radio systems, or your jurisdiction’s approved procedures.</p>
-          </div>
-          <button id="clearLocalDataButton" class="button danger" type="button">Erase Local App Data</button>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <footer>
-    <span>EM Command</span>
-    <span id="footerStatus">Public-data dashboard</span>
-  </footer>
-
-  <script src="loader.js"></script>
+<header><div class="brand"><small>SITUATIONAL AWARENESS</small>EM COMMAND</div><div class="status"><span id="dot" class="dot"></span><span id="net">Checking</span><span id="clock"></span></div></header>
+<main>
+<section class="bar">
+<label>Operating area<input id="place" value="Fairview / Major County, OK"></label>
+<label>Latitude<input id="lat" type="number" step=".0001" value="36.2689"></label>
+<label>Longitude<input id="lon" type="number" step=".0001" value="-98.4798"></label>
+<button id="refresh" class="btn primary">Refresh</button>
+</section>
+<section class="grid">
+<article class="panel"><div class="head"><div><div class="eyebrow">NOAA / NESDIS</div><h2>GOES-19 GeoColor</h2></div><a class="btn" href="https://www.star.nesdis.noaa.gov/GOES/conus.php?sat=G19" target="_blank" rel="noopener">Open viewer</a></div><div class="sat"><img id="sat" src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/GEOCOLOR/1250x750.jpg" alt="Latest GOES-19 CONUS satellite image"></div><div class="source">Visual reference only. Confirm warnings through official operational channels.</div></article>
+<article class="panel"><div class="head"><div><div class="eyebrow">WEATHER.GOV</div><h2 id="alertTitle">Active NWS Alerts</h2></div></div><div id="alerts" class="alerts"><div class="empty">Loading alerts…</div></div></article>
+</section>
+<section class="panel" style="margin-top:14px"><div class="head"><div><div class="eyebrow">NWS FORECAST</div><h2 id="forecastTitle">Operational Outlook</h2></div></div><div id="forecast" class="forecast"><div class="empty">Loading forecast…</div></div></section>
+<section class="panel" style="margin-top:14px"><div class="head"><div><div class="eyebrow">ONE-TAP ACCESS</div><h2>Emergency Management Resources</h2></div></div><div class="links" id="links"></div></section>
+<section class="logwrap">
+<article class="panel"><div class="head"><div><div class="eyebrow">LOCAL DEVICE LOG</div><h2>Add Incident Entry</h2></div></div><form id="logForm" class="form"><input id="category" placeholder="Category, e.g. Road Closure" required><input id="location" placeholder="Location"><textarea id="notes" placeholder="Situation, action taken, assigned resources, and next step" required></textarea><button class="btn primary">Add Entry</button></form></article>
+<article class="panel"><div class="head"><div><div class="eyebrow">CHRONOLOGICAL RECORD</div><h2>Incident Log</h2></div><div class="actions"><button id="export" class="btn">Export CSV</button><button id="clear" class="btn">Clear</button></div></div><div id="entries" class="entries"><div class="empty">No entries recorded.</div></div></article>
+</section>
+<p class="footer">EM Command uses public internet sources and local browser storage. It does not replace NWSChat, IPAWS, dispatch, radio systems, or approved procedures.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const resources=[['Oklahoma Mesonet','Observations, radar and environmental maps','https://www.mesonet.org/'],['OK-First','Public-safety weather decision support','https://www.mesonet.org/public-safety'],['RadarFirst','OK-First radar launch page','https://www.mesonet.org/index.php/okfirst/data_visualization_tools'],['FEMA','Emergency manager resources','https://www.fema.gov/emergency-managers'],['Homeland Security','DHS programs and responder resources','https://www.dhs.gov/'],['ArcGIS QuickCapture','Rapid field data collection','https://www.esri.com/en-us/arcgis/products/arcgis-quickcapture/resources'],['NWS Norman','Local forecasts, warnings and briefings','https://www.weather.gov/oun/'],['Storm Prediction Center','Outlooks, watches and discussions','https://www.spc.noaa.gov/']];
+$('links').innerHTML=resources.map(r=>`<a class="link" href="${r[2]}" target="_blank" rel="noopener"><strong>${r[0]}</strong><span>${r[1]}</span></a>`).join('');
+function connectivity(){$('dot').classList.toggle('online',navigator.onLine);$('net').textContent=navigator.onLine?'Online':'Offline'}
+function clock(){ $('clock').textContent=new Date().toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}) }
+setInterval(clock,1000);clock();connectivity();addEventListener('online',connectivity);addEventListener('offline',connectivity);
+const saved=JSON.parse(localStorage.getItem('emConfig')||'null');if(saved){$('place').value=saved.place;$('lat').value=saved.lat;$('lon').value=saved.lon}
+async function json(url){const r=await fetch(url,{headers:{Accept:'application/geo+json, application/json'},cache:'no-store'});if(!r.ok)throw Error(`${r.status} ${r.statusText}`);return r.json()}
+function fmt(t){return t?new Date(t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Unknown'}
+async function refresh(){const place=$('place').value.trim(),lat=Number($('lat').value),lon=Number($('lon').value);if(!Number.isFinite(lat)||!Number.isFinite(lon))return alert('Enter valid coordinates.');localStorage.setItem('emConfig',JSON.stringify({place,lat,lon}));$('alerts').innerHTML='<div class="empty">Loading alerts…</div>';$('forecast').innerHTML='<div class="empty">Loading forecast…</div>';$('sat').src=`https://cdn.star.nesdis.noaa.gov/GOES19/ABI/CONUS/GEOCOLOR/1250x750.jpg?t=${Date.now()}`;
+try{const [alerts,point]=await Promise.all([json(`https://api.weather.gov/alerts/active?point=${lat},${lon}`),json(`https://api.weather.gov/points/${lat},${lon}`)]);const list=alerts.features||[];$('alertTitle').textContent=`Active NWS Alerts · ${list.length}`;$('alerts').innerHTML=list.length?list.map(f=>{const p=f.properties||{},sev=(p.severity||'unknown').toLowerCase();return `<div class="alert ${sev}"><h3>${esc(p.event||'Weather Alert')}</h3><div>${esc(p.headline||p.areaDesc||'')}</div><div class="meta">Expires ${esc(fmt(p.expires))} · ${esc(p.severity||'Unknown')}</div></div>`}).join(''):'<div class="empty">No active NWS alerts for this point.</div>';const fc=await json(point.properties.forecast);const periods=(fc.properties.periods||[]).slice(0,6);$('forecastTitle').textContent=`Operational Outlook · ${place}`;$('forecast').innerHTML=periods.map(p=>`<div class="period"><b>${esc(p.name)}</b><div class="temp">${esc(p.temperature)}°${esc(p.temperatureUnit)}</div><div>${esc(p.shortForecast)}</div><div class="meta">${esc(p.windDirection)} ${esc(p.windSpeed)}</div></div>`).join('')||'<div class="empty">Forecast unavailable.</div>'}catch(e){console.error(e);$('alerts').innerHTML=`<div class="empty warning">NWS data could not load: ${esc(e.message)}. Use the NWS and Mesonet links below.</div>`;$('forecast').innerHTML='<div class="empty warning">Forecast unavailable.</div>'}}
+$('refresh').onclick=refresh;
+let logs=JSON.parse(localStorage.getItem('emLogs')||'[]');function renderLogs(){$('entries').innerHTML=logs.length?[...logs].reverse().map(x=>`<div class="entry"><b>${esc(x.category)}</b><span class="meta"> · ${esc(new Date(x.time).toLocaleString())}</span><p>${esc(x.notes)}</p>${x.location?`<div class="meta">Location: ${esc(x.location)}</div>`:''}</div>`).join(''):'<div class="empty">No entries recorded.</div>'}
+$('logForm').onsubmit=e=>{e.preventDefault();logs.push({time:new Date().toISOString(),category:$('category').value.trim(),location:$('location').value.trim(),notes:$('notes').value.trim()});localStorage.setItem('emLogs',JSON.stringify(logs));e.target.reset();renderLogs()};
+$('clear').onclick=()=>{if(confirm('Clear all local incident entries?')){logs=[];localStorage.removeItem('emLogs');renderLogs()}};
+$('export').onclick=()=>{if(!logs.length)return alert('No entries to export.');const rows=[['Time','Category','Location','Notes'],...logs.map(x=>[x.time,x.category,x.location,x.notes])];const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`em-command-log-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href)};
+renderLogs();refresh();
+</script>
 </body>
 </html>
